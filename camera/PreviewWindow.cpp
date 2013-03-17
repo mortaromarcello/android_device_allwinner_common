@@ -41,12 +41,12 @@ PreviewWindow::PreviewWindow()
       mLayerFormat(-1),
       mScreenID(0)
 {
-	F_ALOG;
+	F_LOG;
 }
 
 PreviewWindow::~PreviewWindow()
 {
-	F_ALOG;
+	F_LOG;
 }
 
 /****************************************************************************
@@ -241,6 +241,7 @@ bool PreviewWindow::onNextFrameAvailableSW(const void* frame,
     if (res != NO_ERROR || buffer == NULL) {
         ALOGE("%s: Unable to dequeue preview window buffer: %d -> %s",
             __FUNCTION__, -res, strerror(-res));
+         stopPreview();
         return false;
     }
 
@@ -287,7 +288,7 @@ bool PreviewWindow::onNextFrameAvailableSW(const void* frame,
 
 bool PreviewWindow::adjustPreviewDimensions(V4L2Camera* camera_dev)
 {
-	// F_ALOG;
+	// F_LOG;
     /* Match the cached frame dimensions against the actual ones. */
     if (mPreviewFrameWidth == camera_dev->getFrameWidth() &&
         mPreviewFrameHeight == camera_dev->getFrameHeight()) {

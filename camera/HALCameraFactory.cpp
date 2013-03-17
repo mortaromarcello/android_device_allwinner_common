@@ -41,7 +41,7 @@ HALCameraFactory::HALCameraFactory()
           mCameraHardwareNum(0),
           mConstructedOK(false)
 {
-	F_ALOG;
+	        
 
 	// camera config information
 	mCameraConfig = new CCameraConfig(0);
@@ -96,7 +96,7 @@ HALCameraFactory::HALCameraFactory()
 
 HALCameraFactory::~HALCameraFactory()
 {
-	F_ALOG;
+	        
     if (mHardwareCameras != NULL) {
         for (int n = 0; n < mCameraHardwareNum; n++) {
             if (mHardwareCameras[n] != NULL) {
@@ -161,7 +161,7 @@ int HALCameraFactory::device_open(const hw_module_t* module,
                                        const char* name,
                                        hw_device_t** device)
 {
-	F_ALOG;
+	        
     /*
      * Simply verify the parameters, and dispatch the call inside the
      * HALCameraFactory instance.
@@ -182,14 +182,14 @@ int HALCameraFactory::device_open(const hw_module_t* module,
 
 int HALCameraFactory::get_number_of_cameras(void)
 {
-	F_ALOG;
+	        
     return gEmulatedCameraFactory.getCameraHardwareNum();
 }
 
 int HALCameraFactory::get_camera_info(int camera_id,
                                            struct camera_info* info)
 {
-	F_ALOG;
+	        
     return gEmulatedCameraFactory.getCameraInfo(camera_id, info);
 }
 

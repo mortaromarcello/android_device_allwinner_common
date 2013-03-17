@@ -34,7 +34,7 @@
 #include <sys/mman.h>
 
 #include <hardware/display.h>
-#include <sunxi_disp_ioctl.h>
+#include <drv_display_sun4i.h>
 #include <g2d_driver.h>
 #include <fb.h>
 
@@ -774,6 +774,7 @@ static int display_copyfb(struct display_device_t *dev,int srcfb_id,int srcfb_bu
     blit_para.src_rect.h            = src_height;
 
     blit_para.flag                 = G2D_BLT_NONE;
+    //blit_para.flag                  = G2D_BLT_ROTATE180;
 			
     err = ioctl(ctx->mFD_mp , G2D_CMD_STRETCHBLT ,(unsigned long)&blit_para);				
     if(err < 0)		

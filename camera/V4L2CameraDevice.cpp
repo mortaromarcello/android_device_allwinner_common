@@ -50,7 +50,7 @@ V4L2CameraDevice::V4L2CameraDevice(CameraHardwareDevice* camera_hal, int id)
       mPreviewBufferID(0),
       mPrepareTakePhoto(false)
 {
-	F_ALOG;
+	F_LOG;
 	memset(mDeviceName, 0, sizeof(mDeviceName));
 	
 	pthread_mutex_init(&mMutexTakePhoto, NULL);
@@ -59,17 +59,35 @@ V4L2CameraDevice::V4L2CameraDevice(CameraHardwareDevice* camera_hal, int id)
 
 V4L2CameraDevice::~V4L2CameraDevice()
 {
-	F_ALOG;
+	F_LOG;
 }
 
 // 
 status_t V4L2CameraDevice::Initialize()
 {
-	F_ALOG;
+	F_LOG;
 
 	return V4L2Camera::Initialize();
 }
 
+static bool
+deviceCardMatches(const char *matchCard)
+{
+   char buffer[8192];
+   bool ret;
+   FILE *fd = fopen( "/proc/modules", "r" );
+
+    if (fd) 
+    {
+       int l  = fread(buffer, 1, sizeof(buffer)-1, fd);
+       buffer[l] = 0;
+       if (strstr(buffer, matchCard)) {
+           ret = strstr(buffer, matchCard);
+        }
+    }
+
+    return ret;
+}
 
 /****************************************************************************
  * V4L2Camera device abstract interface implementation.
@@ -77,7 +95,7 @@ status_t V4L2CameraDevice::Initialize()
 
 status_t V4L2CameraDevice::connectDevice()
 {
-	F_ALOG;
+	F_LOG;
 
     Mutex::Autolock locker(&mObjectLock);
     if (!isInitialized()) {
@@ -112,10 +130,7 @@ status_t V4L2CameraDevice::connectDevice()
 		mPreviewBuffer.buf_phy_addr[i] |= 0x40000000;
 		ALOGD("preview buffer: index: %d, vir: %x, phy: %x, len: %x", 
 				i, mPreviewBuffer.buf_vir_addr[i], mPreviewBuffer.buf_phy_addr[i], buffer_len);
-
-		memset((void*)mPreviewBuffer.buf_vir_addr[i], 0x10, MAX_PREVIEW_WIDTH * MAX_PREVIEW_HEIGHT);
-		memset((void*)mPreviewBuffer.buf_vir_addr[i] + MAX_PREVIEW_WIDTH * MAX_PREVIEW_HEIGHT, 
-			0x80, MAX_PREVIEW_WIDTH * MAX_PREVIEW_HEIGHT / 2);
+	//	memset((void*)mPreviewBuffer.buf_vir_addr[i], 0x10, MAX_PREVIEW_WIDTH * MAX_PREVIEW_HEIGHT /2);
 	}
 
     /* There is no device to connect to. */
@@ -126,7 +141,7 @@ status_t V4L2CameraDevice::connectDevice()
 
 status_t V4L2CameraDevice::disconnectDevice()
 {
-	F_ALOG;
+	F_LOG;
 
     Mutex::Autolock locker(&mObjectLock);
     if (!isConnected()) {
@@ -199,7 +214,7 @@ status_t V4L2CameraDevice::startDevice(int width,
 	mPreviewAfter = 1000000 / getFrameRate();
 
 	// front camera do not use hw preview, SW preview will mirror it
-	if (mCameraFacing == CAMERA_FACING_FRONT)
+	if (mCameraFacing == CAMERA_FACING_FRONT) //&& (!deviceCardMatches("gt2005")))
 	{
 		ALOGD("do not us hw preview");
 		mPreviewUseHW = false;
@@ -415,6 +430,7 @@ int V4L2CameraDevice::openCameraDev()
 {
 	// open V4L2 device
 	mCamFd = open(mDeviceName, O_RDWR | O_NONBLOCK, 0);
+
 	if (mCamFd == -1) 
 	{ 
         ALOGE("ERROR opening V4L interface: %s", strerror(errno)); 
@@ -436,6 +452,7 @@ int V4L2CameraDevice::openCameraDev()
 	int ret = -1;
 	struct v4l2_capability cap; 
 	ret = ioctl (mCamFd, VIDIOC_QUERYCAP, &cap); 
+
     if (ret < 0) 
 	{ 
         ALOGE("Error opening device: unable to query device."); 
@@ -459,12 +476,12 @@ int V4L2CameraDevice::openCameraDev()
 
 void V4L2CameraDevice::closeCameraDev()
 {
-	F_ALOG;
+	F_LOG;
 	
-	if (mCamFd != NULL)
+	if (mCamFd != 0)
 	{
 		close(mCamFd);
-		mCamFd = NULL;
+		mCamFd = 0;
 	}
 }
 
@@ -500,7 +517,7 @@ int V4L2CameraDevice::v4l2SetVideoParams(int width, int height, uint32_t pix_fmt
 
 int V4L2CameraDevice::v4l2ReqBufs()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = UNKNOWN_ERROR;
 	struct v4l2_requestbuffers rb; 
 
@@ -538,7 +555,7 @@ int V4L2CameraDevice::v4l2ReqBufs()
 
 int V4L2CameraDevice::v4l2QueryBuf()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = UNKNOWN_ERROR;
 	struct v4l2_buffer buf;
 	
@@ -584,7 +601,7 @@ int V4L2CameraDevice::v4l2QueryBuf()
 
 int V4L2CameraDevice::v4l2StartStreaming()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = UNKNOWN_ERROR; 
 	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE; 
 	
@@ -600,7 +617,7 @@ int V4L2CameraDevice::v4l2StartStreaming()
 
 int V4L2CameraDevice::v4l2StopStreaming()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = UNKNOWN_ERROR; 
 	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE; 
 	
@@ -617,7 +634,7 @@ int V4L2CameraDevice::v4l2StopStreaming()
 
 int V4L2CameraDevice::v4l2UnmapBuf()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = UNKNOWN_ERROR;
 	
 	for (int i = 0; i < mBufferCnt; i++) 
@@ -672,7 +689,7 @@ int V4L2CameraDevice::getPreviewFrame(v4l2_buffer *buf)
 
 int V4L2CameraDevice::tryFmtSize(int * width, int * height)
 {
-	F_ALOG;
+	F_LOG;
 	int ret = -1;
 	struct v4l2_format fmt;
 
@@ -702,7 +719,7 @@ int V4L2CameraDevice::tryFmtSize(int * width, int * height)
 // set device node name, such as "/dev/video0"
 int V4L2CameraDevice::setV4L2DeviceName(char * pname)
 {
-	F_ALOG;
+	F_LOG;
 	if(pname == NULL)
 	{
 		return UNKNOWN_ERROR;
@@ -717,14 +734,14 @@ int V4L2CameraDevice::setV4L2DeviceName(char * pname)
 // set different device id on the same CSI
 int V4L2CameraDevice::setV4L2DeviceID(int device_id)
 {
-	F_ALOG;
+	F_LOG;
 	mDeviceID = device_id;
 	return OK;
 }
 
 int V4L2CameraDevice::getFrameRate()
 {
-	F_ALOG;
+	F_LOG;
 	int ret = -1;
 
 	struct v4l2_streamparm parms;
@@ -754,7 +771,7 @@ int V4L2CameraDevice::setCameraFacing(int facing)
 
 int V4L2CameraDevice::setImageEffect(int effect)
 {
-	F_ALOG;
+	F_LOG;
 	int ret = -1;
 	struct v4l2_control ctrl;
 
@@ -787,7 +804,7 @@ int V4L2CameraDevice::setWhiteBalance(int wb)
 
 int V4L2CameraDevice::setExposure(int exp)
 {
-	F_ALOG;
+	F_LOG;
 	int ret = -1;
 	struct v4l2_control ctrl;
 
@@ -805,7 +822,7 @@ int V4L2CameraDevice::setExposure(int exp)
 // flash mode
 int V4L2CameraDevice::setFlashMode(int mode)
 {
-	F_ALOG;
+	F_LOG;
 	int ret = -1;
 	struct v4l2_control ctrl;
 
@@ -823,7 +840,7 @@ int V4L2CameraDevice::setFlashMode(int mode)
 
 bool V4L2CameraDevice::isPreviewTime()
 {
-	// F_ALOG;
+	// F_LOG;
     timeval cur_time;
     gettimeofday(&cur_time, NULL);
     const uint64_t cur_mks = cur_time.tv_sec * 1000000LL + cur_time.tv_usec;

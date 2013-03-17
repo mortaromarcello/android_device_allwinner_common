@@ -32,12 +32,12 @@ CameraHardwareDevice::CameraHardwareDevice(int cameraId, struct hw_module_t* mod
         : CameraHardware(cameraId, module),
           mV4L2CameraDevice(NULL)
 {
-	F_ALOG;
+	F_LOG;
 }
 
 CameraHardwareDevice::~CameraHardwareDevice()
 {
-	F_ALOG;
+	F_LOG;
 	if (mV4L2CameraDevice != NULL)
 	{
 		delete mV4L2CameraDevice;
@@ -51,7 +51,7 @@ CameraHardwareDevice::~CameraHardwareDevice()
 
 status_t CameraHardwareDevice::Initialize()
 {
-	F_ALOG;
+	F_LOG;
 
 	// instance V4L2CameraDevice object
 	mV4L2CameraDevice = new V4L2CameraDevice(this, mCameraID);
@@ -89,7 +89,7 @@ status_t CameraHardwareDevice::Initialize()
 
 V4L2CameraDevice* CameraHardwareDevice::getCameraDevice()
 {
-	F_ALOG;
+	F_LOG;
     return mV4L2CameraDevice;
 }
 

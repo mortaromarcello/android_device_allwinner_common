@@ -337,13 +337,13 @@ void CallbackNotifier::takePictureHW(const void* frame, V4L2Camera* camera_dev)
      */
     if (isMessageEnabled(CAMERA_MSG_SHUTTER)) 
 	{
-		F_ALOG;
+		F_LOG;
         mNotifyCB(CAMERA_MSG_SHUTTER, 0, 0, mCallbackCookie);
     }
 	
     if (isMessageEnabled(CAMERA_MSG_RAW_IMAGE_NOTIFY)) 
 	{
-		F_ALOG;
+		F_LOG;
 		camera_memory_t* cam_buff =
         	mGetMemoryCB(-1, camera_dev->getFrameBufferSize(), 1, NULL);
         if (NULL != cam_buff && NULL != cam_buff->data) 
@@ -448,7 +448,7 @@ void CallbackNotifier::takePictureHW(const void* frame, V4L2Camera* camera_dev)
 
 	if (isMessageEnabled(CAMERA_MSG_POSTVIEW_FRAME) )
 	{
-		F_ALOG;
+		F_LOG;
 		camera_memory_t* cam_buff =
         	mGetMemoryCB(-1, camera_dev->getFrameBufferSize(), 1, NULL);
         if (NULL != cam_buff && NULL != cam_buff->data) 

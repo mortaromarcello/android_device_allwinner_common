@@ -20,10 +20,12 @@ LOCAL_MODULE := lights.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_C_INCLUDES := device/allwinner/common/include
+# Include the UMP header files
+LOCAL_C_INCLUDES := $(TARGET_HARDWARE_INCLUDE)
 
 LOCAL_SRC_FILES := lights.c
 
 LOCAL_SHARED_LIBRARIES := liblog
 
 include $(BUILD_SHARED_LIBRARY)
+

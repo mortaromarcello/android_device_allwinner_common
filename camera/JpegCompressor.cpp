@@ -21,7 +21,6 @@
 
 #define LOG_TAG "Camera_JPEG"
 #include "CameraDebug.h"
-
 #include <utils/Errors.h>
 #include "JpegCompressor.h"
 

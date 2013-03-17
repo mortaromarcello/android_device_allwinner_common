@@ -27,7 +27,7 @@
 #include "CameraDebug.h"
 
 #include <ui/Rect.h>
-#include <sunxi_disp_ioctl.h>
+#include <drv_display_sun4i.h>
 #include <videodev2.h>
 #include "CameraHardware.h"
 #include "V4L2CameraDevice.h"
@@ -70,7 +70,7 @@ CameraHardware::CameraHardware(int cameraId, struct hw_module_t* module)
     /*
      * Initialize camera_device descriptor for this object.
      */
-	F_ALOG;
+	F_LOG;
 
     /* Common header */
     common.tag = HARDWARE_DEVICE_TAG;
@@ -102,7 +102,7 @@ CameraHardware::~CameraHardware()
 
 status_t CameraHardware::Initialize()
 {
-	F_ALOG;
+	F_LOG;
 
 	if (mCameraConfig == NULL)
 	{
@@ -320,7 +320,7 @@ bool CameraHardware::onNextFrameAvailable(const void* frame,
                                           V4L2Camera* camera_dev,
                                           bool bUseMataData)
 {
-	// F_ALOG;
+	// F_LOG;
 	bool ret = false;
 	
     /* Notify the preview window first. */
@@ -341,7 +341,7 @@ bool CameraHardware::onNextFramePreview(const void* frame,
 									  V4L2Camera* camera_dev,
                                       bool bUseMataData)
 {
-	// F_ALOG;
+	// F_LOG;
     /* Notify the preview window first. */
     return mPreviewWindow.onNextFrameAvailable(frame, timestamp, camera_dev, bUseMataData);
 }
@@ -362,7 +362,7 @@ void CameraHardware::onTakingPicture(const void* frame, V4L2Camera* camera_dev, 
 
 void CameraHardware::onCameraDeviceError(int err)
 {
-	F_ALOG;
+	F_LOG;
     /* Errors are reported through the callback notifier */
     mCallbackNotifier.onCameraDeviceError(err);
 }
@@ -427,7 +427,7 @@ status_t CameraHardware::getCameraInfo(struct camera_info* info)
 
 status_t CameraHardware::setPreviewWindow(struct preview_stream_ops* window)
 {
-	F_ALOG;
+	F_LOG;
     /* Callback should return a negative errno. */
 	return -mPreviewWindow.setPreviewWindow(window,
                                              mParameters.getPreviewFrameRate());
@@ -439,58 +439,58 @@ void CameraHardware::setCallbacks(camera_notify_callback notify_cb,
                                   camera_request_memory get_memory,
                                   void* user)
 {
-	F_ALOG;
+	F_LOG;
     mCallbackNotifier.setCallbacks(notify_cb, data_cb, data_cb_timestamp,
                                     get_memory, user);
 }
 
 void CameraHardware::enableMsgType(int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
     mCallbackNotifier.enableMessage(msg_type);
 }
 
 void CameraHardware::disableMsgType(int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
     mCallbackNotifier.disableMessage(msg_type);
 }
 
 int CameraHardware::isMsgTypeEnabled(int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
     return mCallbackNotifier.isMessageEnabled(msg_type);
 }
 
 status_t CameraHardware::startPreview()
 {
-	F_ALOG;
+	F_LOG;
     /* Callback should return a negative errno. */
     return -doStartPreview();
 }
 
 void CameraHardware::stopPreview()
 {
-	F_ALOG;
+	F_LOG;
     doStopPreview();
 }
 
 int CameraHardware::isPreviewEnabled()
 {
-	F_ALOG;
+	F_LOG;
     return mPreviewWindow.isPreviewEnabled();
 }
 
 status_t CameraHardware::storeMetaDataInBuffers(int enable)
 {
-	F_ALOG;
+	F_LOG;
     /* Callback should return a negative errno. */
     return -mCallbackNotifier.storeMetaDataInBuffers(enable);
 }
 
 status_t CameraHardware::startRecording()
 {
-	F_ALOG;
+	F_LOG;
 
 	bPixFmtNV12 = true;
 	
@@ -514,7 +514,7 @@ status_t CameraHardware::startRecording()
 
 void CameraHardware::stopRecording()
 {
-	F_ALOG;
+	F_LOG;
     mCallbackNotifier.disableVideoRecording();
 	bPixFmtNV12 = false;
 //	mCallbackNotifier.storeMetaDataInBuffers(false);
@@ -540,13 +540,13 @@ void CameraHardware::stopRecording()
 
 int CameraHardware::isRecordingEnabled()
 {
-	F_ALOG;
+	F_LOG;
     return mCallbackNotifier.isVideoRecordingEnabled();
 }
 
 void CameraHardware::releaseRecordingFrame(const void* opaque)
 {
-	F_ALOG;
+	F_LOG;
     mCallbackNotifier.releaseRecordingFrame(opaque);
 }
 
@@ -981,7 +981,7 @@ status_t CameraHardware::setParameters(const char* p)
 static char lNoParam = '\0';
 char* CameraHardware::getParameters()
 {
-	F_ALOG;
+	F_LOG;
     String8 params(mParameters.flatten());
     char* ret_str =
         reinterpret_cast<char*>(malloc(sizeof(char) * (params.length()+1)));
@@ -998,7 +998,7 @@ char* CameraHardware::getParameters()
 
 void CameraHardware::putParameters(char* params)
 {
-	F_ALOG;
+	F_LOG;
     /* This method simply frees parameters allocated in getParameters(). */
     if (params != NULL && params != &lNoParam) {
         free(params);
@@ -1156,13 +1156,14 @@ status_t CameraHardware::doStopPreview()
         /* Stop the camera. */
         if (getCameraDevice()->isStarted()) {
             getCameraDevice()->stopDeliveringFrames();
+            mPreviewWindow.stopPreview();
             res = getCameraDevice()->stopDevice();
         }
 
-        if (res == NO_ERROR) {
+     //   if (res == NO_ERROR) {
             /* Disable preview as well. */
-            mPreviewWindow.stopPreview();
-        }
+    //        mPreviewWindow.stopPreview();
+    //    }
     }
 
     return NO_ERROR;
@@ -1174,7 +1175,7 @@ status_t CameraHardware::doStopPreview()
 
 status_t CameraHardware::cleanupCamera()
 {
-	F_ALOG;
+	F_LOG;
 
     status_t res = NO_ERROR;
 
@@ -1222,7 +1223,7 @@ status_t CameraHardware::cleanupCamera()
 int CameraHardware::set_preview_window(struct camera_device* dev,
                                        struct preview_stream_ops* window)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1240,7 +1241,7 @@ void CameraHardware::set_callbacks(
         camera_request_memory get_memory,
         void* user)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1252,7 +1253,7 @@ void CameraHardware::set_callbacks(
 
 void CameraHardware::enable_msg_type(struct camera_device* dev, int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1264,7 +1265,7 @@ void CameraHardware::enable_msg_type(struct camera_device* dev, int32_t msg_type
 
 void CameraHardware::disable_msg_type(struct camera_device* dev, int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1276,7 +1277,7 @@ void CameraHardware::disable_msg_type(struct camera_device* dev, int32_t msg_typ
 
 int CameraHardware::msg_type_enabled(struct camera_device* dev, int32_t msg_type)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1288,7 +1289,7 @@ int CameraHardware::msg_type_enabled(struct camera_device* dev, int32_t msg_type
 
 int CameraHardware::start_preview(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1300,7 +1301,7 @@ int CameraHardware::start_preview(struct camera_device* dev)
 
 void CameraHardware::stop_preview(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1312,7 +1313,7 @@ void CameraHardware::stop_preview(struct camera_device* dev)
 
 int CameraHardware::preview_enabled(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1325,7 +1326,7 @@ int CameraHardware::preview_enabled(struct camera_device* dev)
 int CameraHardware::store_meta_data_in_buffers(struct camera_device* dev,
                                                int enable)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1337,7 +1338,7 @@ int CameraHardware::store_meta_data_in_buffers(struct camera_device* dev,
 
 int CameraHardware::start_recording(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1349,7 +1350,7 @@ int CameraHardware::start_recording(struct camera_device* dev)
 
 void CameraHardware::stop_recording(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1361,7 +1362,7 @@ void CameraHardware::stop_recording(struct camera_device* dev)
 
 int CameraHardware::recording_enabled(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1374,7 +1375,7 @@ int CameraHardware::recording_enabled(struct camera_device* dev)
 void CameraHardware::release_recording_frame(struct camera_device* dev,
                                              const void* opaque)
 {
-	// F_ALOG;
+	// F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1386,7 +1387,7 @@ void CameraHardware::release_recording_frame(struct camera_device* dev,
 
 int CameraHardware::auto_focus(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1398,7 +1399,7 @@ int CameraHardware::auto_focus(struct camera_device* dev)
 
 int CameraHardware::cancel_auto_focus(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1410,7 +1411,7 @@ int CameraHardware::cancel_auto_focus(struct camera_device* dev)
 
 int CameraHardware::take_picture(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1422,7 +1423,7 @@ int CameraHardware::take_picture(struct camera_device* dev)
 
 int CameraHardware::cancel_picture(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1434,7 +1435,7 @@ int CameraHardware::cancel_picture(struct camera_device* dev)
 
 int CameraHardware::set_parameters(struct camera_device* dev, const char* parms)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1446,7 +1447,7 @@ int CameraHardware::set_parameters(struct camera_device* dev, const char* parms)
 
 char* CameraHardware::get_parameters(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1458,7 +1459,7 @@ char* CameraHardware::get_parameters(struct camera_device* dev)
 
 void CameraHardware::put_parameters(struct camera_device* dev, char* params)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1473,7 +1474,7 @@ int CameraHardware::send_command(struct camera_device* dev,
                                  int32_t arg1,
                                  int32_t arg2)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1485,7 +1486,7 @@ int CameraHardware::send_command(struct camera_device* dev,
 
 void CameraHardware::release(struct camera_device* dev)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1497,7 +1498,7 @@ void CameraHardware::release(struct camera_device* dev)
 
 int CameraHardware::dump(struct camera_device* dev, int fd)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec = reinterpret_cast<CameraHardware*>(dev->priv);
     if (ec == NULL) {
@@ -1509,7 +1510,7 @@ int CameraHardware::dump(struct camera_device* dev, int fd)
 
 int CameraHardware::close(struct hw_device_t* device)
 {
-	F_ALOG;
+	F_LOG;
 
     CameraHardware* ec =
         reinterpret_cast<CameraHardware*>(reinterpret_cast<struct camera_device*>(device)->priv);

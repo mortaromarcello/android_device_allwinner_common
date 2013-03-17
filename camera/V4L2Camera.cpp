@@ -41,12 +41,12 @@ V4L2Camera::V4L2Camera(CameraHardware* camera_hal)
       mInPictureThread(false),
       mStartDeliverTimeUs(0)
 {
-	F_ALOG;
+	F_LOG;
 }
 
 V4L2Camera::~V4L2Camera()
 {
-	F_ALOG;
+	F_LOG;
 
     if (mCurrentFrame != NULL) {
         delete[] mCurrentFrame;
@@ -59,7 +59,7 @@ V4L2Camera::~V4L2Camera()
 
 status_t V4L2Camera::Initialize()
 {
-	F_ALOG;
+	F_LOG;
     if (isInitialized()) {
         ALOGW("%s: V4L2Camera device is already initialized: mState = %d",
              __FUNCTION__, mState);
@@ -158,7 +158,7 @@ status_t V4L2Camera::commonStartDevice(int width,
                                        int height,
                                        uint32_t pix_fmt)
 {
-	F_ALOG;
+	F_LOG;
 	
     /* Validate pixel format, and calculate framebuffer size at the same time. */
     switch (pix_fmt) {
@@ -196,7 +196,7 @@ status_t V4L2Camera::commonStartDevice(int width,
 
 void V4L2Camera::commonStopDevice()
 {
-	F_ALOG;
+	F_LOG;
     mFrameWidth = mFrameHeight = mTotalPixels = 0;
     mPixelFormat = 0;
 	
@@ -240,7 +240,7 @@ status_t V4L2Camera::stopWorkerThread()
 
 bool V4L2Camera::inWorkerThread()
 {
-	F_ALOG;
+	F_LOG;
     /* This will end the thread loop, and will terminate the thread. Derived
      * classes must override this method. */
     return false;
@@ -315,7 +315,7 @@ status_t V4L2Camera::WorkerThread::stopThread()
 V4L2Camera::WorkerThread::SelectRes
 V4L2Camera::WorkerThread::Select(int fd, int timeout)
 {
-	// F_ALOG;
+	// F_LOG;
     fd_set fds[1];
     struct timeval tv, *tvp = NULL;
 
